@@ -1,11 +1,18 @@
 {
-  "projects": {
-    "myproject": {
-      "path": "/app/projects/myproject",
-      "test_command": "pytest",
-      "build_command": "npm run build"
+  "providers": {
+    "groq": {
+      "name": "Groq",
+      "api_key_env": "GROQ_API_KEY",
+      "models": ["llama-3.3-70b-versatile"],
+      "default_model": "llama-3.3-70b-versatile"
+    },
+    "nvidia": {
+      "name": "NVIDIA DeepSeek",
+      "api_key_env": "MOONSHOT_API_KEY",
+      "models": ["deepseek-ai/deepseek-v3.1"],
+      "default_model": "deepseek-ai/deepseek-v3.1",
+      "endpoint": "https://integrate.api.nvidia.com/v1"
     }
   },
-  "allowed_commands": ["pytest", "npm test", "npm run", "python", "pip", "git status", "ls", "cat"],
-  "max_execution_time": 60
+  "default_provider": "groq"
 }
