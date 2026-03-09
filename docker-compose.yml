@@ -12,4 +12,5 @@ services:
       - DEFAULT_PROJECT=${DEFAULT_PROJECT}
     volumes:
       - ./projects:/app/projects
+      - ./workspace:/app/workspace
     working_dir: /app
