@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "myproject": {
+      "path": "/app/projects/myproject",
+      "test_command": "pytest",
+      "build_command": "npm run build"
+    }
+  },
+  "allowed_commands": ["pytest", "npm test", "npm run", "python", "pip", "git status", "ls", "cat"],
+  "max_execution_time": 60
+}

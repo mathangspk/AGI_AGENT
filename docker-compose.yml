@@ -1,0 +1,15 @@
+version: "3.3"
+
+services:
+  devmate:
+    build: .
+    container_name: devmate
+    restart: unless-stopped
+    environment:
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
+      - DEFAULT_PROJECT=${DEFAULT_PROJECT}
+    volumes:
+      - ./projects:/app/projects
+    working_dir: /app
