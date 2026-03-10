@@ -8,80 +8,101 @@ from bot.tools.time_tool import time_tool
 
 FUNCTION_SCHEMAS = [
     {
-        "name": "search_web",
-        "description": "Search the internet for information. Use this when you need to find current information, news, or facts.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "The search query"}
-            },
-            "required": ["query"]
+        "type": "function",
+        "function": {
+            "name": "search_web",
+            "description": "Search the internet for information. Use this when you need to find current information, news, or facts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "The search query"}
+                },
+                "required": ["query"]
+            }
         }
     },
     {
-        "name": "fetch_content",
-        "description": "Fetch and parse content from a URL. Returns up to 5000 characters.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "url": {"type": "string", "description": "The URL to fetch"},
-                "max_length": {"type": "integer", "description": "Max characters to return (default 5000)", "default": 5000}
-            },
-            "required": ["url"]
+        "type": "function",
+        "function": {
+            "name": "fetch_content",
+            "description": "Fetch and parse content from a URL. Returns up to 5000 characters.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string", "description": "The URL to fetch"},
+                    "max_length": {"type": "integer", "description": "Max characters to return (default 5000)", "default": 5000}
+                },
+                "required": ["url"]
+            }
         }
     },
     {
-        "name": "get_current_time",
-        "description": "Get the current date and time",
-        "parameters": {
-            "type": "object",
-            "properties": {}
+        "type": "function",
+        "function": {
+            "name": "get_current_time",
+            "description": "Get the current date and time",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
         }
     },
     {
-        "name": "run_shell_command",
-        "description": "Execute a shell command on the server. USE WITH CAUTION.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "command": {"type": "string", "description": "The shell command to execute"},
-                "timeout": {"type": "integer", "description": "Timeout in seconds (default 60)", "default": 60}
-            },
-            "required": ["command"]
+        "type": "function",
+        "function": {
+            "name": "run_shell_command",
+            "description": "Execute a shell command on the server. USE WITH CAUTION.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "The shell command to execute"},
+                    "timeout": {"type": "integer", "description": "Timeout in seconds (default 60)", "default": 60}
+                },
+                "required": ["command"]
+            }
         }
     },
     {
-        "name": "read_file",
-        "description": "Read a file from the filesystem",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Full path to the file"}
-            },
-            "required": ["path"]
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": "Read a file from the filesystem",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "Full path to the file"}
+                },
+                "required": ["path"]
+            }
         }
     },
     {
-        "name": "write_file",
-        "description": "Write content to a file. Creates new file or overwrites existing.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Full path to the file"},
-                "content": {"type": "string", "description": "Content to write"}
-            },
-            "required": ["path", "content"]
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write content to a file. Creates new file or overwrites existing.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "Full path to the file"},
+                    "content": {"type": "string", "description": "Content to write"}
+                },
+                "required": ["path", "content"]
+            }
         }
     },
     {
-        "name": "list_directory",
-        "description": "List files in a directory",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Directory path to list"}
-            },
-            "required": ["path"]
+        "type": "function",
+        "function": {
+            "name": "list_directory",
+            "description": "List files in a directory",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "Directory path to list"}
+                },
+                "required": ["path"]
+            }
         }
     }
 ]
