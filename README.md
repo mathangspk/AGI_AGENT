@@ -1,138 +1,255 @@
-# DevMate - Discord AI Coding Assistant
+# DevMate - Discord AI Coding Agent
 
-DevMate is an AI agent that runs on Docker, integrated with Discord to support programming. Just @mention the bot on Discord to:
-
-- Read/write/edit files in your projects
-- Run tests and build commands
-- Create and manage skills
-- Have persistent memory between sessions
+DevMate is an AI agent that runs on Docker, integrated with Discord. It can read/write files, run commands, manage SSH connections, set reminders, and handle webhooks.
 
 ## Features
 
-- AI Models: DeepSeek V3.1 (NVIDIA), Groq (Llama 3.3 70B)
-- Discord Integration: Responds when @mentioned
-- File Management: Read, write, create files in projects
-- Command Execution: Run test, build commands safely
-- Docker Deployment: Runs on container, easy backup/restore
-- **Long-term Memory**: identity.md, goals.md, memory/, MEMORY.md
-- **Skill System**: Create skills via chat
+### AI Models
+- NVIDIA DeepSeek V3.1 - High accuracy
+- Groq (Llama 3.3 70B) - Fast responses
+
+### Core Capabilities
+- Read/write files in projects
+- Run test/build commands
+- Persistent memory (identity, goals, memory)
+- Skill system with per-skill model selection
+
+### SSH Management
+- Generate SSH keys
+- Connect to any server
+- Run remote commands
+- Password encryption
+
+### Reminders
+- Natural language time parsing
+- Scheduled notifications
+- Per-channel or DM delivery
+
+### Webhooks
+- Discord webhooks
+- Git auto-deploy triggers
+- Monitoring alerts
+- Custom triggers
 
 ## Quick Start
 
 ### 1. Clone and Setup
+git clone https://github.com/mathangspk/AGI_AGENT.git devmate
+cd devmate
+cp .env.example .env
+nano .env
 
-[?2004h[?1049h[22;0;0t[1;24r(B[m[4l[?7h[39;49m[?1h=[?1h=[?25l[39;49m(B[m[H[2J[22;34H(B[0;1m[37m[42m[ Reading... ][39;49m(B[m[22;19H(B[0;1m[37m[42m[ Read 4 lines (converted from DOS format) ][39;49m(B[m[?12l[?25h[24;1H[?1049l[23;0;0t[?1l>[?2004l
+### 2. Configure .env
+DISCORD_BOT_TOKEN=your_token
+GROQ_API_KEY=your_groq_key
+MOONSHOT_API_KEY=your_nvidia_key
+DEFAULT_PROJECT=myproject
 
-Add your keys:
-ProgramFiles(x86)=C:\Program Files (x86)
-CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
-NUMBER_OF_PROCESSORS=8
-FPS_BROWSER_USER_PROFILE_STRING=Default
-PROCESSOR_LEVEL=6
-OPENCODE_EXPERIMENTAL_FILEWATCHER=true
-USERDOMAIN_ROAMINGPROFILE=DESKTOP-DO3FFIR
-PROGRAMFILES=C:\Program Files
-MSYSTEM=MINGW64
-ChocolateyInstall=C:\ProgramData\chocolatey
-PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
-JAVA_HOME=C:\Program Files\Java\jdk-17
-OS=Windows_NT
-AGENT=1
-HOMEDRIVE=C:
-USERDOMAIN=DESKTOP-DO3FFIR
-PWD=/c/local/Agent_code
-GIT_LFS_PATH=C:\Program Files\Git LFS
-USERPROFILE=C:\Users\mango
-OneDriveConsumer=C:\Users\mango\OneDrive
-ALLUSERSPROFILE=C:\ProgramData
-CommonProgramW6432=C:\Program Files\Common Files
-OPENCODE_PID=20300
-HOME=/c/Users/mango
-USERNAME=mango
-OPENCODE=1
-EFC_9264_1592913036=1
-PLINK_PROTOCOL=ssh
-OneDrive=C:\Users\mango\OneDrive
-COMSPEC=C:\WINDOWS\system32\cmd.exe
-APPDATA=C:\Users\mango\AppData\Roaming
-SYSTEMROOT=C:\WINDOWS
-LOCALAPPDATA=C:\Users\mango\AppData\Local
-OPENCODE_EXPERIMENTAL_ICON_DISCOVERY=true
-__COMPAT_LAYER=DetectorsAppHealth
-OPENCODE_SERVER_USERNAME=opencode
-COMPUTERNAME=DESKTOP-DO3FFIR
-TERM=xterm-256color
-LOGONSERVER=\\DESKTOP-DO3FFIR
-NO_PROXY=127.0.0.1,localhost,::1
-PSModulePath=C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
-TEMP=/tmp
-SHLVL=1
-OPENCODE_CLIENT=desktop
-PROCESSOR_REVISION=9a03
-DriverData=C:\Windows\System32\Drivers\DriverData
-COMMONPROGRAMFILES=C:\Program Files\Common Files
-XDG_STATE_HOME=C:\Users\mango\AppData\Local\ai.opencode.desktop\
-EXEPATH=C:\Program Files\Git\bin
-PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
-SESSIONNAME=Console
-OPENCODE_SERVER_PASSWORD=e553d4e1-e7b2-4dca-a228-fae8a896d04f
-HOMEPATH=\Users\mango
-TMP=/tmp
-PATH=/mingw64/bin:/usr/bin:/c/Users/mango/bin:/c/Program Files/Common Files/Oracle/Java/javapath:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem:/c/WINDOWS/System32/WindowsPowerShell/v1.0:/c/WINDOWS/System32/OpenSSH:/c/Program Files/dotnet:/c/Program Files/Git LFS:/cmd:/c/ProgramData/chocolatey/bin:/c/Program Files/bazel:/c/msys64/usr/bin:/c/Users/mango/AppData/Local/Programs/Python/Python312:/c/Users/mango/AppData/Local/Programs/Python/Python312/Scripts:/c/Program Files (x86)/CODESYS/APInstaller:/c/Program Files (x86)/Bitvise SSH Client:/c/Program Files/Tailscale:/c/Program Files/Common Files/Oracle/Java/javapath:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem:/c/WINDOWS/System32/WindowsPowerShell/v1.0:/c/WINDOWS/System32/OpenSSH:/c/Program Files/dotnet:/c/Program Files/Git LFS:/cmd:/c/ProgramData/chocolatey/bin:/c/Program Files/bazel:/c/msys64/usr/bin:/c/Users/mango/AppData/Local/Programs/Python/Python312:/c/Users/mango/AppData/Local/Programs/Python/Python312/Scripts:/c/Program Files (x86)/CODESYS/APInstaller:/c/Program Files (x86)/Bitvise SSH Client:/c/Program Files/Tailscale:/c/Program Files/bazel":/c/Users/mango/AppData/Local/Programs/Microsoft VS Code/bin:/c/Users/mango/AppData/Local/Programs/cursor/resources/app/bin
-ProgramW6432=C:\Program Files
-WINDIR=C:\WINDOWS
-FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
-PROCESSOR_ARCHITECTURE=AMD64
-PUBLIC=C:\Users\Public
-SYSTEMDRIVE=C:
-ProgramData=C:\ProgramData
-ChocolateyLastPathUpdate=134043814089319674
-_=/usr/bin/env
-
-### 2. Create Discord Bot
-
+### 3. Create Discord Bot
 1. Go to https://discord.com/developers/applications
-2. Create new Application
-3. Go to Bot - Reset Token - Copy token
-4. Go to Privileged Intents - Enable Message Content Intent
-5. Go to OAuth2 - URL Generator - Select bot scope - Copy invite URL
+2. Create Application - Bot
+3. Enable Message Content Intent
+4. Copy invite URL and add bot to server
 
-### 3. Run
+### 4. Run
+docker-compose up -d
 
+## Project Structure
 
+devmate/
+├── bot/
+│   ├── main.py                    # Entry point
+│   ├── discord_client.py          # Discord handler
+│   ├── llm/
+│   │   └── router.py             # LLM routing + memory
+│   ├── tools/
+│   │   ├── ssh_manager.py        # SSH connections
+│   │   ├── reminder_manager.py   # Cron/schedules
+│   │   ├── webhook_manager.py    # Webhooks
+│   │   ├── project_manager.py   # Project management
+│   │   ├── command_exec.py      # Command execution
+│   │   └── file_manager.py      # File operations
+│   └── providers/
+│       └── registry.py           # Provider config
+├── workspace/devmate/            # Mounted from host
+│   ├── identity.md              # Who the bot is
+│   ├── goals.md                # Bots mission
+│   ├── USER.md                 # User info
+│   ├── AGENTS.md               # Workspace rules
+│   ├── MEMORY.md               # Long-term memory
+│   ├── memory/                 # Daily logs
+│   ├── skills/                 # Bot skills
+│   ├── config/                 # SSH, reminders, webhooks
+│   └── keys/                   # SSH keys
+├── projects/                    # Your code projects
+├── config.json                   # Provider config
+├── docker-compose.yml
+├── Dockerfile
+└── README.md
 
-## Workspace Structure
+## Configuration
 
+### config.json - Providers
+{
+  providers: {
+    groq: {
+      name: Groq,
+      api_key_env: GROQ_API_KEY,
+      models: [llama-3.3-70b-versatile],
+      default_model: llama-3.3-70b-versatile
+    },
+    nvidia: {
+      name: NVIDIA DeepSeek,
+      api_key_env: MOONSHOT_API_KEY,
+      models: [deepseek-ai/deepseek-v3.1],
+      default_model: deepseek-ai/deepseek-v3.1,
+      endpoint: https://integrate.api.nvidia.com/v1
+    }
+  },
+  default_provider: groq
+}
 
+### Adding New Provider
+anthropic: {
+  name: Anthropic Claude,
+  api_key_env: ANTHROPIC_API_KEY,
+  models: [claude-3-opus-20240229],
+  default_model: claude-3-opus-20240229,
+  endpoint: https://api.anthropic.com/v1
+}
 
 ## Commands
 
-On Discord, @mention the bot:
+### Model Selection
+@DevMate use groq - Switch to Groq for this session
+@DevMate use nvidia - Switch to NVIDIA for this session
+@DevMate use default - Use default provider
+@DevMate which model - Show current model
+@DevMate show providers - List available providers
 
+### Skills
+@DevMate create skill <name> - Create new skill (asks for model)
+@DevMate list skills - List all skills
+@DevMate set skill <name> model <provider> - Change skills model
 
+### SSH
+@DevMate ssh key generate - Generate SSH key
+@DevMate ssh connect user@host -p 22 - Connect to server
+@DevMate ssh connect user@host -password XYZ - Connect with password
+@DevMate ssh run <command> - Run command on server
+@DevMate ssh disconnect - Disconnect
+@DevMate ssh status - Show connection status
 
-## Backup & Restore
+### Reminders
+@DevMate remind me in 20 minutes to check email - Set reminder
+@DevMate remind me at 9:00 AM to standup - Set daily reminder
+@DevMate list reminders - List all reminders
+@DevMate delete reminder <id> - Delete reminder
 
+### Webhooks
+@DevMate webhook add <name> <url> - Add webhook
+@DevMate webhook list - List webhooks
+@DevMate webhook test <name> - Test webhook
+@DevMate webhook delete <name> - Delete webhook
+@DevMate webhook add-trigger <name> <trigger> - Add trigger (git, alert, monitor)
 
+### General
+@DevMate Who are you? - Show identity
+@DevMate What is your mission? - Show goals
 
-## Update
+## Skill Format
 
+Skills are stored in workspace/devmate/skills/ as markdown files with YAML frontmatter:
 
+---
+model: groq
+description: Simple reminder skill
+---
+# Skill: reminder
 
-## Files in Workspace
+## Description
+Nhắc nhở người dùng về các task
 
-| File | Purpose |
-|------|---------|
-| identity.md | Defines who the bot is |
-| goals.md | Bot's mission and objectives |
-| USER.md | Information about the user |
-| AGENTS.md | Workspace rules |
-| MEMORY.md | Long-term memory |
-| memory/YYYY-MM-DD.md | Daily conversation logs |
-| skills/*.md | Bot skills |
+## Usage
+Khi user yêu cầu nhắc nhở...
+
+## Backup and Restore
+
+### Backup
+Backup workspace (identity, memory, skills, configs):
+tar -czvf workspace-backup.tar.gz workspace/
+
+Backup projects:
+tar -czvf projects-backup.tar.gz projects/
+
+Git backup:
+git add . && git commit -m Update && git push
+
+### Restore
+Clone repo:
+git clone https://github.com/mathangspk/AGI_AGENT.git
+
+Restore environment:
+cp .env.example .env && nano .env
+
+Restore backups:
+tar -xzvf workspace-backup.tar.gz
+tar -xzvf projects-backup.tar.gz
+
+Rebuild and run:
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+## Development
+
+### Adding New Features
+1. New Tool: Add to bot/tools/
+2. New Provider: Add to config.json and update bot/providers/registry.py
+3. New Command: Add handler in bot/discord_client.py
+
+### Testing
+Build and run:
+docker-compose up -d
+
+View logs:
+docker logs devmate
+
+Restart:
+docker-compose restart
+
+## Files Description
+
+File - Purpose
+identity.md - Bots personality and values
+goals.md - Bots mission and objectives
+USER.md - User information
+AGENTS.md - Workspace rules
+MEMORY.md - Long-term memory (curated)
+memory/YYYY-MM-DD.md - Daily conversation logs
+skills/*.md - Bot skills
+config/ssh.json - SSH connections
+config/reminders.json - Scheduled reminders
+config/webhooks.json - Webhook configurations
+keys/id_rsa_* - SSH private keys
 
 ## Security Notes
+- API keys stored in .env - never commit to git
+- SSH passwords are encrypted with Fernet
+- SSH keys stored in workspace/devmate/keys/
+- Backup .env and workspace/ regularly
 
-- API keys are stored in .env - never commit to git
-- The projects/ folder contains your code - backup regularly
-- The workspace/ folder contains AI memory and skills
+## Dependencies
+discord.py>=2.0.0
+groq>=0.4.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+aiofiles>=23.0.0
+PyYAML>=6.0
+paramiko>=2.12.0
+cryptography>=41.0.0
+aiohttp>=3.9.0
+apscheduler>=3.10.0
+
+## License
+MIT
