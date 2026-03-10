@@ -192,12 +192,17 @@ Be concise and practical."""
             print(f"[DEBUG] Has tool_calls: {hasattr(response, 'tool_calls') and response.tool_calls}")
             
             if not hasattr(response, 'tool_calls') or not response.tool_calls:
-                # FALLBACK: Manual function detection for models that don't support tool calling
+                # FALLBACK: Manual function detection only when no function was called AND no useful content
                 content = response.content
-                manual_result = await self._try_manual_function(content)
-                if manual_result:
-                    return manual_result
-                return content
+                
+                # Only use manual detection if content is basically empty or indicates inability
+                if not content or len(content.strip()) < 5:
+                    # Pass the USER message to detect what they asked
+                    user_msg = messages[-1]["content"] if messages[-1].get("role") == "user" else ""
+                    manual_result = await self._try_manual_function(user_msg)
+                    if manual_result:
+                        return manual_result
+                return content if content else "No response"
             
             for tool_call in response.tool_calls:
                 func_name = tool_call.function.name
