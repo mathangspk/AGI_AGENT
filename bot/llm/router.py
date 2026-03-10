@@ -158,6 +158,8 @@ Be concise and practical."""
         while iteration < max_iterations:
             iteration += 1
             
+            print(f"[DEBUG] Iteration {iteration}, calling LLM...")
+            
             if self.nvidia_api_key:
                 response = await self._call_nvidia(messages)
             elif self.groq_api_key:
@@ -165,14 +167,26 @@ Be concise and practical."""
             else:
                 return "No LLM provider configured."
             
+            print(f"[DEBUG] Response: {response}")
+            print(f"[DEBUG] Has tool_calls: {hasattr(response, 'tool_calls') and response.tool_calls}")
+            
             if not hasattr(response, 'tool_calls') or not response.tool_calls:
-                return response.content
+                # FALLBACK: Manual function detection for models that don't support tool calling
+                content = response.content
+                manual_result = await self._try_manual_function(content)
+                if manual_result:
+                    return manual_result
+                return content
             
             for tool_call in response.tool_calls:
                 func_name = tool_call.function.name
                 func_args = json.loads(tool_call.function.arguments)
                 
+                print(f"[DEBUG] Calling function: {func_name} with args: {func_args}")
+                
                 result = await self._execute_function(func_name, func_args)
+                
+                print(f"[DEBUG] Function result: {result[:200]}...")
                 
                 messages.append({
                     "role": "assistant",
@@ -192,6 +206,28 @@ Be concise and practical."""
                 })
         
         return response.content if hasattr(response, 'content') else str(response)
+    
+    async def _try_manual_function(self, content: str) -> str:
+        """Fallback: manually detect and execute functions based on message content"""
+        content_lower = content.lower()
+        
+        # Detect time-related queries (English + Vietnamese)
+        time_keywords = [
+            "mấy giờ", "giờ nào", "giờ rồi", "bao giờ", 
+            "time is it", "what time", "current time", "now",
+            "bây giờ", "hiện tại"
+        ]
+        if any(kw in content_lower for kw in time_keywords):
+            print("[DEBUG] Manual detection: get_current_time")
+            return f"Giờ hiện tại là: {time_tool.get_current_time()}"
+        
+        # Detect date-related queries
+        date_keywords = ["ngày nào", "hôm nay là ngày", "what date", "today's date", "ngày hôm nay"]
+        if any(kw in content_lower for kw in date_keywords):
+            print("[DEBUG] Manual detection: get_current_date")
+            return f"Hôm nay là ngày: {time_tool.get_current_date()}"
+        
+        return ""
     
     async def _execute_function(self, func_name: str, args: Dict[str, Any]) -> str:
         try:
