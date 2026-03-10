@@ -39,6 +39,37 @@ class DiscordClient:
             await message.reply(f"Hey! I am DevMate.\nProvider: {self.llm_router.current_provider}\nSkills: {', '.join(skills) if skills else 'None'}\n\nHow can I help you?")
             return
         
+        # Model switching commands
+        if content.lower().startswith("use groq"):
+            self.llm_router.set_user_provider(user_id, "groq")
+            await message.reply("Switched to Groq (Llama 3.3 70B) for your session!")
+            return
+        
+        if content.lower().startswith("use nvidia"):
+            self.llm_router.set_user_provider(user_id, "nvidia")
+            await message.reply("Switched to NVIDIA DeepSeek V3.1 for your session!")
+            return
+        
+        if content.lower().startswith("use default"):
+            if user_id in self.llm_router.user_providers:
+                del self.llm_router.user_providers[user_id]
+            await message.reply(f"Using default provider: {self.llm_router.current_provider}")
+            return
+        
+        if content.lower() in ["which model", "what model", "model"]:
+            provider = self.llm_router.get_provider_for_user(user_id)
+            if provider == "nvidia":
+                await message.reply("You are using: NVIDIA DeepSeek V3.1")
+            elif provider == "groq":
+                await message.reply("You are using: Groq (Llama 3.3 70B)")
+            else:
+                await message.reply(f"Using default: {self.llm_router.current_provider}")
+            return
+        
+        if content.lower() in ["show providers", "list providers", "providers"]:
+            await message.reply(f"Available providers:\n{self.llm_router.list_providers()}")
+            return
+        
         if content.lower().startswith("tao skill") or content.lower().startswith("create skill"):
             await self.handle_create_skill(message, content)
             return

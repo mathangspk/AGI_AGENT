@@ -114,16 +114,45 @@ class LLMRouter:
         self.message_history = {}
         self.command_exec = CommandExecutor()
         self.file_manager = FileManager()
-        self.function_schemas = FUNCTION_SCHEMAS
+        self.user_providers = {}  # Per-user provider override
+        self.workspace_context = {}
         
+        # Determine default provider
         if self.nvidia_api_key:
+            self.default_provider = "nvidia"
             self.current_provider = "NVIDIA (DeepSeek V3.1)"
         elif self.groq_api_key:
+            self.default_provider = "groq"
             self.current_provider = "Groq (Llama 3.3 70B)"
         else:
+            self.default_provider = None
             self.current_provider = "None"
     
+    def get_provider_for_user(self, user_id: int) -> str:
+        """Get provider for specific user (allows per-user override)"""
+        return self.user_providers.get(user_id, self.default_provider)
+    
+    def set_user_provider(self, user_id: int, provider: str):
+        """Set provider for specific user"""
+        if provider in ["groq", "nvidia"]:
+            self.user_providers[user_id] = provider
+            return True
+        return False
+    
+    def list_providers(self) -> str:
+        providers = []
+        if self.groq_api_key:
+            providers.append("groq - Groq (Llama 3.3 70B) - Fast responses")
+        if self.nvidia_api_key:
+            providers.append("nvidia - NVIDIA DeepSeek V3.1 - High accuracy")
+        return "\n".join(providers) if providers else "No providers configured"
+    
     async def chat(self, message: str, user_id: int, project_manager, project_name: Optional[str] = None) -> str:
+        # Check for time-related queries FIRST (before calling LLM)
+        time_result = self._detect_and_execute_time_query(message)
+        if time_result:
+            return time_result
+        
         if user_id not in self.message_history:
             self.message_history[user_id] = []
         
@@ -134,7 +163,18 @@ class LLMRouter:
         messages.append({"role": "user", "content": message})
         
         try:
-            response = await self._call_llm_with_functions(messages)
+            # Get provider for this user
+            provider = self.get_provider_for_user(user_id)
+            if provider == "nvidia" and self.nvidia_api_key:
+                response = await self._call_nvidia(messages)
+            elif provider == "groq" and self.groq_api_key:
+                response = await self._call_groq(messages)
+            elif self.default_provider == "nvidia" and self.nvidia_api_key:
+                response = await self._call_nvidia(messages)
+            elif self.default_provider == "groq" and self.groq_api_key:
+                response = await self._call_groq(messages)
+            else:
+                return "No LLM provider configured."
         except Exception as e:
             response = f"Error: {str(e)}"
         
@@ -144,6 +184,21 @@ class LLMRouter:
         
         return response
     
+    def _detect_and_execute_time_query(self, message: str) -> str:
+        """Detect time-related queries and execute directly without LLM"""
+        msg_lower = message.lower()
+        
+        time_keywords = [
+            "mấy giờ", "giờ nào", "giờ rồi", "bao giờ", 
+            "time is it", "what time", "current time", "now",
+            "bây giờ", "hiện tại", "giờ hiện tại"
+        ]
+        
+        if any(kw in msg_lower for kw in time_keywords):
+            return f"Giờ hiện tại là: {time_tool.get_current_time()}"
+        
+        return ""
+    
     def _build_system_prompt(self, project_manager, project_name: Optional[str] = None) -> str:
         prompt = f"""You are DevMate, an AI coding assistant.
 
@@ -152,17 +207,12 @@ AVAILABLE PROVIDER:
 - NVIDIA DeepSeek V3.1: High performance model
 - Groq: Fast inference with Llama 3.3 70B, Mixtral models
 
-TOOLS AVAILABLE:
-You have access to the following functions - USE THEM when needed:
-- search_web: Search the internet for information
-- fetch_content: Fetch content from a URL (max 5000 chars)
-- get_current_time: Get current date and time
-- run_shell_command: Execute shell commands
-- read_file: Read files from filesystem
-- write_file: Write content to files
-- list_directory: List directory contents
-
-When you need to execute tasks, search for information, or get data from the web, USE THESE FUNCTIONS. Do not just describe what you would do - actually call the functions!
+YOUR CAPABILITIES:
+- Answer questions about time (just ask!)
+- Read/write files in the project directory
+- Run commands (tests, builds, git operations)
+- Search for information
+- List directory contents
 
 Be concise and practical."""
         
@@ -171,89 +221,6 @@ Be concise and practical."""
             prompt += f"\n\nCurrent project: {project_name}\nProject path: {project_path}"
         
         return prompt
-    
-    async def _call_llm_with_functions(self, messages: list) -> str:
-        max_iterations = 5
-        iteration = 0
-        
-        while iteration < max_iterations:
-            iteration += 1
-            
-            print(f"[DEBUG] Iteration {iteration}, calling LLM...")
-            
-            if self.nvidia_api_key:
-                response = await self._call_nvidia(messages)
-            elif self.groq_api_key:
-                response = await self._call_groq(messages)
-            else:
-                return "No LLM provider configured."
-            
-            print(f"[DEBUG] Response: {response}")
-            print(f"[DEBUG] Has tool_calls: {hasattr(response, 'tool_calls') and response.tool_calls}")
-            
-            if not hasattr(response, 'tool_calls') or not response.tool_calls:
-                # FALLBACK: Manual function detection only when no function was called AND no useful content
-                content = response.content
-                
-                # Only use manual detection if content is basically empty or indicates inability
-                if not content or len(content.strip()) < 5:
-                    # Pass the USER message to detect what they asked
-                    user_msg = messages[-1]["content"] if messages[-1].get("role") == "user" else ""
-                    manual_result = await self._try_manual_function(user_msg)
-                    if manual_result:
-                        return manual_result
-                return content if content else "No response"
-            
-            for tool_call in response.tool_calls:
-                func_name = tool_call.function.name
-                func_args = json.loads(tool_call.function.arguments)
-                
-                print(f"[DEBUG] Calling function: {func_name} with args: {func_args}")
-                
-                result = await self._execute_function(func_name, func_args)
-                
-                print(f"[DEBUG] Function result: {result[:200]}...")
-                
-                messages.append({
-                    "role": "assistant",
-                    "tool_calls": [{
-                        "id": tool_call.id,
-                        "type": "function",
-                        "function": {
-                            "name": func_name,
-                            "arguments": tool_call.function.arguments
-                        }
-                    }]
-                })
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": result
-                })
-        
-        return response.content if hasattr(response, 'content') else str(response)
-    
-    async def _try_manual_function(self, content: str) -> str:
-        """Fallback: manually detect and execute functions based on message content"""
-        content_lower = content.lower()
-        
-        # Detect time-related queries (English + Vietnamese)
-        time_keywords = [
-            "mấy giờ", "giờ nào", "giờ rồi", "bao giờ", 
-            "time is it", "what time", "current time", "now",
-            "bây giờ", "hiện tại"
-        ]
-        if any(kw in content_lower for kw in time_keywords):
-            print("[DEBUG] Manual detection: get_current_time")
-            return f"Giờ hiện tại là: {time_tool.get_current_time()}"
-        
-        # Detect date-related queries
-        date_keywords = ["ngày nào", "hôm nay là ngày", "what date", "today's date", "ngày hôm nay"]
-        if any(kw in content_lower for kw in date_keywords):
-            print("[DEBUG] Manual detection: get_current_date")
-            return f"Hôm nay là ngày: {time_tool.get_current_date()}"
-        
-        return ""
     
     async def _execute_function(self, func_name: str, args: Dict[str, Any]) -> str:
         try:
@@ -308,9 +275,7 @@ Be concise and practical."""
             model="deepseek-ai/deepseek-v3.1",
             messages=messages,
             temperature=0.7,
-            max_tokens=4096,
-            tools=self.function_schemas,
-            tool_choice="auto"
+            max_tokens=4096
         )
         
         return response.choices[0].message
@@ -324,9 +289,7 @@ Be concise and practical."""
             model="llama-3.3-70b-versatile",
             messages=messages,
             temperature=0.7,
-            max_tokens=4096,
-            tools=self.function_schemas,
-            tool_choice="auto"
+            max_tokens=4096
         )
         
         return response.choices[0].message
